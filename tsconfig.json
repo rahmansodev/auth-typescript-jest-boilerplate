@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    // "sourceMap": true,
+    "outDir": "./build",
+    "rootDir": "./src",
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "resolveJsonModule": true,
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    /* Advanced Options */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@middlewares/*": ["src/middlewares/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@repos/*": ["src/repos/*"],
+      "@models/*": ["src/models/*"],
+      "@constants/*": ["src/constants/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
+      "@routes/*": ["src/routes/*"],
+      "@listeners/*": ["src/listeners/*"],
+      "@interfaces/*": ["src/interfaces/*"],
+      "@tests/*": ["src/__tests__/*"],
+      "@src/*": ["src/*"]
+    }
+  },
+  "lib": ["es2015"],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

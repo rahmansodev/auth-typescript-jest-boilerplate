@@ -1,0 +1,28 @@
+version: '3'
+services:
+  mongodb:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    volumes:
+      - ../dataDb:/data/db
+    networks:
+      - mynetwork
+
+  auth-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    stdin_open: true
+    ports:
+      - "5000:5000"
+    command: sh -c "rsync -az --delete /opt/apps/node_modules/ /opt/apps/auth-api/node_modules/ && chmod +x /opt/apps/auth-api/.husky/pre-commit && npm run dev"
+    volumes:
+      - .:/opt/apps/auth-api
+    depends_on:
+      - mongodb
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
