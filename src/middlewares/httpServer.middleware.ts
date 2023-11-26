@@ -4,7 +4,7 @@ import * as bodyParser from 'body-parser'
 import cors from 'cors'
 import type express from 'express'
 import helmet from 'helmet'
-import { jwtStrategyMiddleware } from '@middlewares/jwtAuth.middleware'
+import { initAuthMiddleware } from '@middlewares/auth.middleware'
 
 /**
  * @export
@@ -27,6 +27,6 @@ export function configure(app: express.Application): void {
   // providing a Connect/Express middleware that can be used to enable CORS with various options
   app.use(cors())
 
-  // JWT Strategy setup
-  jwtStrategyMiddleware()
+  // init auth middleware
+  initAuthMiddleware()
 }
