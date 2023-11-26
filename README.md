@@ -17,7 +17,7 @@ API Auth is a simple Restful API boilerplate for user register and login using E
 :heavy_check_mark: Jest\
 :heavy_check_mark: Typescript, Prettier, Git Pre-Commit Hooks\
 :heavy_check_mark: Passport\
-:heavy_check_mark: Docker-ready for development, including working node_modules sync & support hot reloading\
+:heavy_check_mark: Docker-ready for development, including working node_modules sync workaround & support hot reloading\
 
 ## Requirements
 
@@ -31,9 +31,7 @@ If using docker :
 - [Node & NPM > 20.x.x](https://nodejs.org/en/)
 - [Docker](https://docker.com)
 
-I personally prefer docker for development since you only need to just install docker & node. It would be running on your Windows, Linux, or Mac right away. So simple. Instead of stumbling on installing Mongodb, etc, etc on your Windows or WSL or Linux, etc, etc.
-
-I can't find yet other method for no need installing Node & NPM if you want to do the github stuff with lint-staged pre-commit directly from your laptop. 
+I personally prefer docker for development since you only need to just install docker & node. It would be running on your Windows, Linux, or Mac right away. So simple. Instead of stumbling on installing Mongodb, RabbitMQ, redis, etc, etc on your Windows or WSL or Linux, etc, etc.
 
 ## Starting
 
@@ -51,16 +49,13 @@ $ npm install
 # 4. Copy .env.example and adjust accordingly
 $ cp sampledotenv .env
 
-# 5. Initiate husky pre-commit hooks
-$ npm run setup-husky
-
-# 6. Run the project locally
+# 5. Run the project locally
 $ npm run dev
 
-# 7. Or Run the project in staging/production
+# 6. Or Run the project in staging/production
 $ npm run start
 
-# 8. You can test it on http://localhost:5000/health
+# 7. You can test it on http://localhost:5000/health
 ```
 
 If using docker :
@@ -84,6 +79,32 @@ $ docker-compose up -d
 
 # 6. You can test it on http://localhost:5000/health
 ```
+
+## Interacting with Code, NPM & Git
+
+If using standalone :
+This is straight forward, everyhting you do it on your laptop. 
+
+
+If using docker :
+- You can just edit code directly from your laptop. Hot reloading will works. No need to rebuild container image when code changes.
+- Everything related to git, you do it on your laptop.
+- When commit & push, will trigger lint-staged which is will run prettier, lint, and test. This will works on your laptop as well.
+- You need to npm install on your laptop at the very beginning setup project. You don't need npm install on the container, since it already declared on the image level.
+- If you want to install a new package or uninstall package, you need to run on your laptop first, then on the container itself if you want to take effect immediately while the container is still running. After that, don't forget to rebuild the image of your container on the next start. If there is never any change on the package.json, then never need to rebuild image even though all of your code changing so much.
+
+Why is this so complicated on docker?
+
+Since we can't avoid that there are many modules that are specific build for specific environtment. For example bcrypt. It just can't work if you npm install on your docker Linux container, and want it to be able to function on your Macbook. In the other hand, you can't also just not installing node_modules on your laptop, since you need it for eslint while coding.
+
+Also you can't git commit & push with lint-staged and jest test if you don't have NPM on your laptop.
+
+Why user Docker then?
+
+I feel it's still simpler to just install Docker + NodeJS only. I've experiencing need to switch environment (Linux, Windows, Windows WSL, Macbook) quite often, and it's been a headache for me to install mongodb, rabbitMQ, redis, gRPC etc etc. But for installing Docker and NodeJS i can still remark it as an easy one. 
+
+Even though what would be perfect is just need to install Docker. But again, I can't find yet a method for this, especially relating to jest, git, bcrypt etc.
+
 
 ## Testing & Deployment
 
@@ -113,7 +134,9 @@ Meanwhile, you don't need to worry about formatting such as (trailling commas, s
 
 Or if you want to format your code manually, run this :
 ```bash
-npm run format
+npm run format <file-locations>
+or
+npm run format .
 ```
 
 ## Contribution
