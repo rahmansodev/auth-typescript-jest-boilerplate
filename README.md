@@ -24,13 +24,16 @@ API Auth is a simple Restful API boilerplate for user register and login using E
 Before starting :checkered_flag:, you need to install this on your server/laptop :
 
 If using standalone : 
-- [Node > 20.x.x](https://nodejs.org/en/)
+- [Node & NPM > 20.x.x](https://nodejs.org/en/)
 - [Mongodb > 7.x.x](https://www.mongodb.com/)
 
 If using docker :
+- [Node & NPM > 20.x.x](https://nodejs.org/en/)
 - [Docker](https://docker.com)
 
-I personally prefer docker for development since you only need to just install docker. It would be running on your Windows, Linux, or Mac right away. So simple. Instead of stumbling on installing Node, Mongodb, etc, etc on your Windows or WSL or Linux, etc, etc.
+I personally prefer docker for development since you only need to just install docker & node. It would be running on your Windows, Linux, or Mac right away. So simple. Instead of stumbling on installing Mongodb, etc, etc on your Windows or WSL or Linux, etc, etc.
+
+I can't find yet other method for no need installing Node & NPM if you want to do the github stuff with lint-staged pre-commit directly from your laptop. 
 
 ## Starting
 
