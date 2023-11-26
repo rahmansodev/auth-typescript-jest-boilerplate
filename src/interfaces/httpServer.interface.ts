@@ -18,10 +18,17 @@ export interface HttpRequest {
   timestamp?: Date
 }
 
+export interface Cookie {
+  name: string
+  value: string
+  options?: object
+}
+
 export interface HttpResponse {
   headers?: object
   statusCode: number
   body: object
+  cookies?: Cookie[]
 }
 
 export interface HttpRequestWithUser extends HttpRequest {

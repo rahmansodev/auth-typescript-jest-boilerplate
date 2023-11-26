@@ -29,6 +29,13 @@ function controllerCb(controller: any) {
           res.set({ 'Content-Type': 'application/json' })
         }
 
+        if (httpResponse.cookies !== undefined) {
+          // Set cookies
+          httpResponse.cookies.forEach((cookie) => {
+            res.cookie(cookie.name, cookie.value, cookie.options ?? {})
+          })
+        }
+
         res.type('json')
 
         res.status(httpResponse.statusCode).send(httpResponse.body)
