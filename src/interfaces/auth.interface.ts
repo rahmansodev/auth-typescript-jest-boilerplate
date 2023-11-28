@@ -92,3 +92,10 @@ export interface UtilAuth {
    */
   validatePassword: (password: string) => boolean
 }
+
+/* Constants */
+export interface ConstantAuth {
+  ACCESS_TOKEN_EXPIRY: '5m'
+  REFRESH_TOKEN_EXPIRY: '7d'
+  COOKIE_REFRESH_TOKEN_EXPIRY: Date
+}

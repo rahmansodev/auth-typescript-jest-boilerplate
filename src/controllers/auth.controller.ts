@@ -6,6 +6,9 @@ import jwt from 'jsonwebtoken'
 import env from '@config/env'
 import { type Cookie } from '@interfaces/httpServer.interface'
 import AuthUtil from '@utils/auth.util'
+import AuthConstant from '@constants/auth.constant'
+import TokenBanUtil from '@utils/tokenBan.util'
+import TokenBanRepo from '@repos/tokenBan.repo'
 
 /**
  * Controller handling authentication-related operations.
@@ -95,15 +98,15 @@ const AuthController: ControllerAuth = {
     // no need to check user or password again, since already handled by the passport local middleware
     const user = req.user
 
-    const accessToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: '5m' })
-    const refreshToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: '7d' })
+    const accessToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: AuthConstant.ACCESS_TOKEN_EXPIRY })
+    const refreshToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: AuthConstant.REFRESH_TOKEN_EXPIRY })
 
     const cookieRefreshToken: Cookie = {
       name: 'refreshToken',
       value: refreshToken,
       options: {
         httpOnly: true,
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
+        expires: AuthConstant.COOKIE_REFRESH_TOKEN_EXPIRY
       }
     }
 
@@ -161,23 +164,42 @@ const AuthController: ControllerAuth = {
       }
     }
 
-    const newAccessToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: '5m' })
-    const newRefreshToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: '7d' })
+    // check is refresh token banned before
+    const isTokenBanned = await TokenBanUtil.isTokenBanned(refreshToken)
+
+    if (isTokenBanned) {
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        body: {
+          message: 'Refresh token cannot be used anymore'
+        }
+      }
+    }
+
+    // create new access token and rotate refreshtoken
+    const accessToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: AuthConstant.ACCESS_TOKEN_EXPIRY })
+    const rotatedRefreshToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: AuthConstant.REFRESH_TOKEN_EXPIRY })
 
     const cookieRefreshToken: Cookie = {
       name: 'refreshToken',
-      value: newRefreshToken,
+      value: rotatedRefreshToken,
       options: {
         httpOnly: true,
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        expires: AuthConstant.COOKIE_REFRESH_TOKEN_EXPIRY
       }
     }
+
+    // lastly ban the refresh token so it can't be used anymore
+    const tokenBanPayload = {
+      token: refreshToken
+    }
+    await TokenBanRepo.createTokenBan(tokenBanPayload)
 
     return {
       statusCode: StatusCodes.OK,
       body: {
         message: 'Successfully refresh token',
-        accessToken: newAccessToken
+        accessToken
       },
       cookies: [cookieRefreshToken]
     }
