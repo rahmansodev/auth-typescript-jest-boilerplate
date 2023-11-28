@@ -1,10 +1,4 @@
-import {
-  type HttpRequestRegUser,
-  type ControllerAuth,
-  type HttpResponseRegUser,
-  type HttpRequestLoginUser,
-  type HttpResponseLoginUser
-} from '@interfaces/auth.interface'
+import { type DecodedRefreshToken, type ControllerAuth } from '@interfaces/auth.interface'
 import { StatusCodes } from 'http-status-codes'
 import bcrypt from 'bcrypt'
 import UserRepo from '@repos/user.repo'
@@ -18,7 +12,7 @@ import AuthUtil from '@utils/auth.util'
  * @type {ControllerAuth}
  */
 const AuthController: ControllerAuth = {
-  async registerUser(req: HttpRequestRegUser): Promise<HttpResponseRegUser> {
+  async registerUser(req) {
     const { email, password, fullName } = req.body
 
     if (email === undefined) {
@@ -97,7 +91,7 @@ const AuthController: ControllerAuth = {
       }
     }
   },
-  async loginUser(req: HttpRequestLoginUser): Promise<HttpResponseLoginUser> {
+  async loginUser(req) {
     // no need to check user or password again, since already handled by the passport local middleware
     const user = req.user
 
@@ -118,6 +112,74 @@ const AuthController: ControllerAuth = {
       body: {
         message: 'User successfully logged in',
         accessToken
+      },
+      cookies: [cookieRefreshToken]
+    }
+  },
+  async refreshToken(req) {
+    // Get refreshToken from the cookie
+    const { refreshToken } = req.cookies
+
+    if (refreshToken === undefined) {
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        body: {
+          message: 'Refresh token not found'
+        }
+      }
+    }
+
+    // Verify the refreshToken
+    const decoded: DecodedRefreshToken | string = jwt.verify(refreshToken, env.secret.JWT)
+
+    console.log(decoded)
+
+    if (typeof decoded === 'string') {
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        body: {
+          message: 'Decoded invalid'
+        }
+      }
+    }
+
+    const { user } = decoded
+
+    if (user === undefined) {
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        body: {
+          message: 'User decoded undefined'
+        }
+      }
+    }
+
+    if (user._id === undefined || user.email === undefined || user.fullName === undefined) {
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        body: {
+          message: 'Jwt payload user structure invalid'
+        }
+      }
+    }
+
+    const newAccessToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: '5m' })
+    const newRefreshToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: '7d' })
+
+    const cookieRefreshToken: Cookie = {
+      name: 'refreshToken',
+      value: newRefreshToken,
+      options: {
+        httpOnly: true,
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      }
+    }
+
+    return {
+      statusCode: StatusCodes.OK,
+      body: {
+        message: 'Successfully refresh token',
+        accessToken: newAccessToken
       },
       cookies: [cookieRefreshToken]
     }

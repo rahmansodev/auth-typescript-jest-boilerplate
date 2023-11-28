@@ -18,7 +18,8 @@ function controllerCb(controller: any) {
         'User-Agent': req.get('User-Agent')
       },
       user: req.user,
-      timestamp: new Date()
+      timestamp: new Date(),
+      cookies: req.cookies
     }
     controller(httpRequest)
       .then((httpResponse: HttpResponse) => {
@@ -65,7 +66,8 @@ function middlewareCb(middleware: any) {
         'User-Agent': req.get('User-Agent')
       },
       user: req.user,
-      timestamp: new Date()
+      timestamp: new Date(),
+      cookies: req.cookies
     }
     middleware(httpRequest, res, next)
       .then((httpResponse: HttpResponse) => {

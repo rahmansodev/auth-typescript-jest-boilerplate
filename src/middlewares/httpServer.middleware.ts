@@ -1,6 +1,6 @@
 import * as bodyParser from 'body-parser'
 // import * as compression from 'compression';
-// import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import type express from 'express'
 import helmet from 'helmet'
@@ -19,7 +19,7 @@ export function configure(app: express.Application): void {
   )
   app.use(bodyParser.json())
   // parse Cookie header and populate req.cookies with an object keyed by the cookie names.
-  // app.use(cookieParser());
+  app.use(cookieParser())
   // returns the compression middleware
   // app.use(compression());
   // helps you secure your Express apps by setting various HTTP headers
