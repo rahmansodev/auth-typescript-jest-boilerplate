@@ -132,8 +132,6 @@ const AuthController: ControllerAuth = {
     // Verify the refreshToken
     const decoded: DecodedRefreshToken | string = jwt.verify(refreshToken, env.secret.JWT)
 
-    console.log(decoded)
-
     if (typeof decoded === 'string') {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
