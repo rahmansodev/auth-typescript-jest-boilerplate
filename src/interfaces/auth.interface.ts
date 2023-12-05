@@ -1,5 +1,5 @@
 import { type HttpResponse, type HttpRequestWithUser, type Cookie } from '@interfaces/httpServer.interface'
-import { type UserBase } from './user.interface'
+import { type UserBase } from '@interfaces/user.interface'
 import { type JwtPayload } from 'jsonwebtoken'
 
 /* Controller */
