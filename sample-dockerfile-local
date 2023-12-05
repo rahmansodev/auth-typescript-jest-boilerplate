@@ -3,12 +3,10 @@ RUN apt-get update -y
 RUN apt-get install -y rsync
 RUN npm install nodemon -g
 ENV HOME=/opt/apps/auth-api \
-    APPS=/opt/apps \
     PORT=5000
 RUN mkdir -p /opt/apps/auth-api
-WORKDIR $APPS
+WORKDIR $HOME
 COPY package.json .
 COPY package-lock.json .
 RUN npm install
-WORKDIR $HOME
 EXPOSE $PORT
