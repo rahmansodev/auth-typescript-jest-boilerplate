@@ -7,8 +7,6 @@ import env from '@config/env'
 import { type Cookie } from '@interfaces/httpServer.interface'
 import AuthUtil from '@utils/auth.util'
 import AuthConstant from '@constants/auth.constant'
-import TokenBanUtil from '@utils/tokenBan.util'
-import TokenBanRepo from '@repos/tokenBan.repo'
 
 /**
  * Controller handling authentication-related operations.
@@ -164,18 +162,6 @@ const AuthController: ControllerAuth = {
       }
     }
 
-    // check is refresh token banned before
-    const isTokenBanned = await TokenBanUtil.isTokenBanned(refreshToken)
-
-    if (isTokenBanned) {
-      return {
-        statusCode: StatusCodes.FORBIDDEN,
-        body: {
-          message: 'Refresh token cannot be used anymore'
-        }
-      }
-    }
-
     // create new access token and rotate refreshtoken
     const accessToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: AuthConstant.ACCESS_TOKEN_EXPIRY })
     const rotatedRefreshToken = jwt.sign({ user }, env.secret.JWT, { expiresIn: AuthConstant.REFRESH_TOKEN_EXPIRY })
@@ -188,12 +174,6 @@ const AuthController: ControllerAuth = {
         expires: AuthConstant.COOKIE_REFRESH_TOKEN_EXPIRY
       }
     }
-
-    // lastly ban the refresh token so it can't be used anymore
-    const tokenBanPayload = {
-      token: refreshToken
-    }
-    await TokenBanRepo.createTokenBan(tokenBanPayload)
 
     return {
       statusCode: StatusCodes.OK,

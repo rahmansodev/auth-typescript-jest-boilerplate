@@ -4,16 +4,12 @@ import jwt from 'jsonwebtoken'
 import AuthUtil from '@utils/auth.util'
 import AuthController from '@controllers/auth.controller'
 import UserRepo from '@repos/user.repo'
-import TokenBanRepo from '@repos/tokenBan.repo'
 import { generateHttpRequestMock } from '@utils/mocks/httpRequestMock.util'
-import TokenBanUtil from '@utils/tokenBan.util'
 
 jest.mock('bcrypt')
 jest.mock('jsonwebtoken')
 jest.mock('@repos/user.repo')
-jest.mock('@repos/tokenBan.repo')
 jest.mock('@utils/auth.util')
-jest.mock('@utils/tokenBan.util')
 
 describe('AuthController', () => {
   beforeEach(() => {
@@ -128,7 +124,6 @@ describe('AuthController', () => {
     const expiredRefreshToken = 'expiredRefreshToken'
     const invalidFormatWithoutUserRefreshToken = 'invalidFormatWithoutUserRefreshToken'
     const invalidFormatRefreshToken = 'invalidFormatRefreshToken'
-    const bannedRefreshToken = 'bannedRefreshToken'
 
     // Mock the jwt.verify function
     ;(jwt.verify as jest.Mock).mockImplementation((token) => {
@@ -142,16 +137,11 @@ describe('AuthController', () => {
         return { userInvalid }
       } else if (token === expiredRefreshToken) {
         throw new jwt.TokenExpiredError('Token expired', new Date())
-      } else if (token === bannedRefreshToken) {
-        return { user: userValid }
       }
     })
 
     // Mock the jwt.sign function
     ;(jwt.sign as jest.Mock).mockResolvedValue('jwtSigned')
-
-    // Mock the tokenBan creation function
-    ;(TokenBanRepo.createTokenBan as jest.Mock).mockImplementation(() => null)
 
     // Test case for a valid refresh token
     it('should refresh token successfully', async () => {
@@ -160,8 +150,6 @@ describe('AuthController', () => {
           refreshToken: validRefreshToken
         }
       })
-
-      ;(TokenBanUtil.isTokenBanned as jest.Mock).mockResolvedValue(false)
 
       const result = await AuthController.refreshToken(req)
 
@@ -239,21 +227,6 @@ describe('AuthController', () => {
 
       expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST)
       expect(result.body.message).toBe('Jwt payload user structure invalid')
-    })
-
-    it('should return FORBIDDEN when refresh token has been banned', async () => {
-      const req = generateHttpRequestMock({
-        cookies: {
-          refreshToken: bannedRefreshToken
-        }
-      })
-
-      ;(TokenBanUtil.isTokenBanned as jest.Mock).mockResolvedValue(true)
-
-      const result = await AuthController.refreshToken(req)
-
-      expect(result.statusCode).toBe(StatusCodes.FORBIDDEN)
-      expect(result.body.message).toBe('Refresh token cannot be used anymore')
     })
   })
 })
