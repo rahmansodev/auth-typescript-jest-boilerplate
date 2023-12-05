@@ -16,7 +16,7 @@ services:
     stdin_open: true
     ports:
       - "5000:5000"
-    command: sh -c "rsync -az --delete /opt/apps/node_modules/ /opt/apps/auth-api/node_modules/ && chmod +x /opt/apps/auth-api/.husky/pre-commit && npm run dev"
+    command: sh -c "chmod +x /opt/apps/auth-api/.husky/pre-commit && npm run dev"
     volumes:
       - .:/opt/apps/auth-api
       - /opt/apps/auth-api/node_modules

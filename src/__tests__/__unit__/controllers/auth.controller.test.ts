@@ -114,4 +114,119 @@ describe('AuthController', () => {
       expect(result.cookies[0].value).toBe('fakeRefreshToken')
     })
   })
+
+  describe('refreshToken', () => {
+    // Mock data for testing
+    const userValid = { _id: '123', email: 'test@example.com', fullName: 'Test User' }
+    const userInvalid = { hello: 'world', invalid: 'object' }
+    const validRefreshToken = 'validRefreshToken'
+    const invalidRefreshToken = 'invalidRefreshToken'
+    const expiredRefreshToken = 'expiredRefreshToken'
+    const invalidFormatWithoutUserRefreshToken = 'invalidFormatWithoutUserRefreshToken'
+    const invalidFormatRefreshToken = 'invalidFormatRefreshToken'
+
+    // Mock the jwt.verify function
+    ;(jwt.verify as jest.Mock).mockImplementation((token) => {
+      if (token === validRefreshToken) {
+        return { user: userValid }
+      } else if (token === invalidRefreshToken) {
+        return 'somehowStringToken'
+      } else if (token === invalidFormatRefreshToken) {
+        return { user: userInvalid }
+      } else if (token === invalidFormatWithoutUserRefreshToken) {
+        return { userInvalid }
+      } else if (token === expiredRefreshToken) {
+        throw new jwt.TokenExpiredError('Token expired', new Date())
+      }
+    })
+
+    // Mock the jwt.sign function
+    ;(jwt.sign as jest.Mock).mockResolvedValue('jwtSigned')
+
+    // Test case for a valid refresh token
+    it('should refresh token successfully', async () => {
+      const req = generateHttpRequestMock({
+        cookies: {
+          refreshToken: validRefreshToken
+        }
+      })
+
+      const result = await AuthController.refreshToken(req)
+
+      expect(result.statusCode).toBe(StatusCodes.OK)
+      expect(result.body.message).toBe('Successfully refresh token')
+      expect(result.body.accessToken).toBeDefined()
+      expect(result.cookies).toBeDefined()
+      expect(result.cookies?.length).toBe(1)
+      expect(result.cookies?.[0]?.name).toBe('refreshToken')
+    })
+
+    // Test case for no refresh token in the request
+    it('should return BAD_REQUEST when refresh token is not found', async () => {
+      const req = generateHttpRequestMock({
+        cookies: {}
+      })
+
+      const result = await AuthController.refreshToken(req)
+
+      expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST)
+      expect(result.body.message).toBe('Refresh token not found')
+    })
+
+    // Test case for an invalid refresh token
+    it('should return BAD_REQUEST when decoding the refresh token fails', async () => {
+      const req = generateHttpRequestMock({
+        cookies: {
+          refreshToken: invalidRefreshToken
+        }
+      })
+
+      const result = await AuthController.refreshToken(req)
+
+      expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST)
+      expect(result.body.message).toBe('Decoded invalid')
+    })
+
+    // Test case for a expired refresh token
+    it('should return BAD_REQUEST when refreshToken expired', async () => {
+      const req = generateHttpRequestMock({
+        cookies: {
+          refreshToken: expiredRefreshToken
+        }
+      })
+
+      try {
+        await AuthController.refreshToken(req)
+      } catch (error) {
+        expect(error).toBeInstanceOf(jwt.TokenExpiredError)
+      }
+    })
+
+    // Test case for a decoded user without necessary properties
+    it('should return BAD_REQUEST when decoded user structure is invalid', async () => {
+      const req = generateHttpRequestMock({
+        cookies: {
+          refreshToken: invalidFormatWithoutUserRefreshToken
+        }
+      })
+
+      const result = await AuthController.refreshToken(req)
+
+      expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST)
+      expect(result.body.message).toBe('User decoded undefined')
+    })
+
+    // Test case for a decoded user without necessary properties
+    it('should return BAD_REQUEST when decoded user structure has user, but invalid object', async () => {
+      const req = generateHttpRequestMock({
+        cookies: {
+          refreshToken: invalidFormatRefreshToken
+        }
+      })
+      const result = await AuthController.refreshToken(req)
+
+      expect(result.statusCode).toBe(StatusCodes.BAD_REQUEST)
+      expect(result.body.message).toBe('Jwt payload user structure invalid')
+    })
+  })
 })

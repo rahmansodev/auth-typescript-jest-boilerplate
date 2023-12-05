@@ -5,6 +5,7 @@ interface HttpRequestMockParams {
   params?: object
   body?: object
   query?: object
+  cookies?: object
 }
 
 export const generateHttpRequestMock = (reqParams?: HttpRequestMockParams): HttpRequest => {
@@ -12,6 +13,7 @@ export const generateHttpRequestMock = (reqParams?: HttpRequestMockParams): Http
   const params = reqParams?.params ?? {}
   const body = reqParams?.body ?? {}
   const user = reqParams?.user ?? undefined
+  const cookies = reqParams?.cookies ?? {}
   const httpRequestMock: HttpRequest = {
     query,
     params,
@@ -25,7 +27,8 @@ export const generateHttpRequestMock = (reqParams?: HttpRequestMockParams): Http
     },
     user,
     timestamp: new Date(),
-    body
+    body,
+    cookies
   }
 
   return httpRequestMock

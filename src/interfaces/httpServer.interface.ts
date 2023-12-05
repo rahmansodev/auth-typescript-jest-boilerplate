@@ -16,6 +16,7 @@ export interface HttpRequest {
   headers: object
   user: object | any
   timestamp?: Date
+  cookies: object
 }
 
 export interface Cookie {

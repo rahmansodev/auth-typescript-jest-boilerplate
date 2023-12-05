@@ -1,4 +1,4 @@
-import { type UserBase, type RepoUser, type UserCreatePayload } from '@interfaces/user.interface'
+import { type RepoUser } from '@interfaces/user.interface'
 import User from '@models/user.model'
 
 /**
@@ -6,10 +6,10 @@ import User from '@models/user.model'
  * @type {RepoUser}
  */
 const UserRepo: RepoUser = {
-  async createUser(payload: UserCreatePayload): Promise<UserBase> {
+  async createUser(payload) {
     return await User.create(payload)
   },
-  async findUserByEmail(email: string): Promise<UserBase | null> {
+  async findUserByEmail(email) {
     return await User.findOne({ email })
   }
 }

@@ -1,4 +1,6 @@
 import { type HttpResponse, type HttpRequestWithUser, type Cookie } from '@interfaces/httpServer.interface'
+import { type UserBase } from '@interfaces/user.interface'
+import { type JwtPayload } from 'jsonwebtoken'
 
 /* Controller */
 export interface HttpRequestRegUser extends HttpRequestWithUser {
@@ -30,6 +32,24 @@ export interface HttpResponseLoginUser extends HttpResponse {
   cookies: Cookie[]
 }
 
+export interface HttpRequestRefreshToken extends HttpRequestWithUser {
+  cookies: {
+    refreshToken?: string
+  }
+}
+
+export interface HttpResponseRefreshToken extends HttpResponse {
+  body: {
+    message: string
+    accessToken?: string
+  }
+  cookies?: Cookie[]
+}
+
+export interface DecodedRefreshToken extends JwtPayload {
+  user?: UserBase
+}
+
 export interface ControllerAuth {
   /**
    * Register a new user.
@@ -45,6 +65,13 @@ export interface ControllerAuth {
    * @returns {Promise<HttpResponseLoginUser>} Response object.
    */
   loginUser: (req: HttpRequestLoginUser) => Promise<HttpResponseLoginUser>
+  /**
+   * Handles the refreshToken endpoint.
+   *
+   * @param {HttpRequestRefreshToken} req - Express Request object.
+   * @returns {Promise<HttpResponseRefreshToken>} Response object.
+   */
+  refreshToken: (req: HttpRequestRefreshToken) => Promise<HttpResponseRefreshToken>
 }
 
 /* Utils */
@@ -64,4 +91,11 @@ export interface UtilAuth {
    * @returns {boolean} True if the password meets the specified criteria, false otherwise.
    */
   validatePassword: (password: string) => boolean
+}
+
+/* Constants */
+export interface ConstantAuth {
+  ACCESS_TOKEN_EXPIRY: '5m'
+  REFRESH_TOKEN_EXPIRY: '7d'
+  COOKIE_REFRESH_TOKEN_EXPIRY: Date
 }
